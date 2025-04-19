@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
-import userModel from "../model/userModel";
+import userModel from "../model/userModel.js";
 
 export const adminAuth = async (req, res, next) => {
+
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {

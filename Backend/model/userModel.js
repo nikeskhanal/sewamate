@@ -3,47 +3,57 @@ import mongoose from "mongoose";
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true
+    required: true,
   },
   email: {
     type: String,
-    required: true
+    required: true,
   },
   contact: {
     type: String,
-    required: true
+    required: true,
   },
   address: {
     type: String,
-    required: true
+    required: true,
   },
   location: {
     type: {
       type: String,
-      enum: ['Point'],
-      required: true
+      enum: ["Point"],
+      required: true,
     },
     coordinates: {
       type: [Number],
-      required: true
-    }
+      required: true,
+    },
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false,
   },
   role: {
     type: String,
-    enum: ['customer', 'worker'],
-    required: true
+    enum: ["customer", "worker"],
+    required: true,
   },
-  servicesOffered: [{
-    type: String
-  }],
+  servicesOffered: [
+    {
+      type: String,
+    },
+  ],
   photo: {
-    type: String, 
-    default: ""  
+    type: String,
+    default: "",
   },
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
 });
 
 userSchema.index({ location: "2dsphere" });
