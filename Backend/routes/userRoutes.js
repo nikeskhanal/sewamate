@@ -3,9 +3,12 @@ import { jwtAuth } from "../middleware/jwtAuth.js";
 import { adminAuth } from "../middleware/adminAuth.js";
 import {
   createUser,
+  forgotPassword,
   getAllUsers,
   getUserById,
-  loginUser
+  loginUser,
+  verifyOtp,
+ 
 } from "../controllers/userController.js"
 
 
@@ -22,4 +25,7 @@ router.get("/", adminAuth, getAllUsers);
 
 router.get("/:id", getUserById);
 
+router.post("/forgot-password", forgotPassword)
+
+router.post("/verify-otp", verifyOtp)
 export default router;

@@ -1,18 +1,39 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv"
 import User from "../model/userModel.js"; 
+import nodemailer from "nodemailer";
+import path from "path"
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
+
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 export const createUser = async (req, res) => {
   try {
     const { password, ...otherFields } = req.body;
-    
-    // Hash the password before saving
-    const hashedPassword = await bcrypt.hash(password, 10);
 
+    if (!password || !otherFields.email || !otherFields.name || !otherFields.contact) {
+      return res.status(400).json({ error: "Required fields are missing" });
+    }
+
+    const existingUser = await User.findOne({ 
+      $or: [{ email: otherFields.email }, { contact: otherFields.contact }] 
+    });
+    if (existingUser) {
+      return res.status(409).json({ error: "Email or contact already in use" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({ ...otherFields, password: hashedPassword });
     const savedUser = await user.save();
 
-    res.status(201).json(savedUser);
+    const { password: _, ...userWithoutPassword } = savedUser._doc;
+    res.status(201).json(userWithoutPassword);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -142,5 +163,85 @@ export const loginUser = async (req, res) => {
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ error: "Something went wrong during login." });
+  }
+};
+
+
+
+
+
+
+
+
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const otp = Math.floor(100000 + Math.random() * 900000); 
+    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); 
+
+    user.resetOTP = otp;
+    user.otpExpiry = otpExpiry;
+    await user.save();
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,  // Use the environment variable for email
+        pass: process.env.EMAIL_PASS,  // Use the environment variable for app password
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Password Reset OTP',
+      text: `Your OTP for password reset is: ${otp}. It is valid for 5 minutes.`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    console.log("OTP sent to email:", otp);
+    res.json({ message: "OTP sent to your email" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+};
+export const verifyOtp = async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  try {
+    // Check all required fields
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ message: "Email, OTP, and new password are required" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (user.resetOTP !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    if (user.otpExpiry < Date.now()) {
+      return res.status(400).json({ message: "OTP has expired" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    user.resetOTP = null;
+    user.otpExpiry = null;
+    await user.save();
+
+    res.json({ message: "Password reset successful" });
+  } catch (err) {
+    console.error("verifyOtp error:", err);
+    res.status(500).json({ error: err.message });
   }
 };

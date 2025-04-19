@@ -9,7 +9,7 @@ const Signup = () => {
     password: "",
     contact: "",
     address: "",
-    role: "customer"
+    role: "customer",
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -32,26 +32,37 @@ const Signup = () => {
       async (position) => {
         const coordinates = [
           position.coords.longitude,
-          position.coords.latitude
+          position.coords.latitude,
         ];
 
         const formData = {
           ...form,
           location: {
             type: "Point",
-            coordinates: coordinates
-          }
+            coordinates: coordinates,
+          },
         };
 
         try {
-          const response = await axios.post("http://localhost:5000/api/users/create", formData);
+          const response = await axios.post(
+            "http://localhost:5000/api/users/create",
+            formData
+          );
           console.log("User created:", response.data);
-          setSuccessMessage("Account created successfully! You can now log in."); // Set success message
+          setSuccessMessage(
+            "Account created successfully! You can now log in."
+          ); // Set success message
           setErrorMessage(""); // Clear any previous error messages
         } catch (error) {
           console.error("Error creating user:", error);
-          setErrorMessage("Error creating user. Please try again."); // Set error message
-          setSuccessMessage(""); // Clear any previous success messages
+          if (error.response && error.response.status === 409) {
+            setErrorMessage(
+              error.response.data.error || "Email or contact already in use."
+            );
+          } else {
+            setErrorMessage("Error creating user. Please try again.");
+          }
+          setSuccessMessage("");
         }
       },
       (error) => {
@@ -169,7 +180,10 @@ const Signup = () => {
 
         <p className="text-center text-gray-500 text-sm mt-4">
           Already have an account?{" "}
-          <a href="/login" className="text-pink-600 hover:underline font-medium">
+          <a
+            href="/login"
+            className="text-pink-600 hover:underline font-medium"
+          >
             Login
           </a>
         </p>

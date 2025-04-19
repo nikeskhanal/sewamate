@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react"; // Importing the necessary icons
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -30,10 +30,8 @@ const Login = () => {
         return;
       }
 
-      // Store token in localStorage
       localStorage.setItem("token", data.token);
 
-      // Redirect based on role
       if (data.user.role === "worker") {
         navigate("/worker-dashboard");
       } else if (data.user.role === "customer") {
@@ -45,7 +43,7 @@ const Login = () => {
       console.error("Login error:", err);
       alert("Something went wrong. Try again.");
     }
-};
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-500 px-4">
@@ -67,7 +65,6 @@ const Login = () => {
             />
           </div>
 
-          {/* Password */}
           <div className="relative">
             <Lock className="absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400" />
             <input
@@ -87,7 +84,16 @@ const Login = () => {
             </div>
           </div>
 
-          {/* Submit */}
+          {/* Forgot Password link */}
+          <div className="text-right">
+            <a
+              href="/forgot-password"
+              className="text-sm text-indigo-600 hover:underline"
+            >
+              Forgot Password?
+            </a>
+          </div>
+
           <button
             type="submit"
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-xl font-semibold transition-all"
