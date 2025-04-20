@@ -28,4 +28,6 @@ router.get("/:id", getUserById);
 router.post("/forgot-password", forgotPassword)
 
 router.post("/verify-otp", verifyOtp)
+
+
 export default router;

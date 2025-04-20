@@ -40,7 +40,7 @@ export const createUser = async (req, res) => {
 };
 
 
-// Get all users
+
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find();
@@ -50,7 +50,9 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-// Get a user by ID
+
+
+
 export const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -87,7 +89,7 @@ export const deleteUser = async (req, res) => {
   }
 };
 
-// Find nearby workers by location
+
 export const findNearbyWorkers = async (req, res) => {
   try {
     const { lat, lng, maxDistance = 5000 } = req.query;
@@ -216,7 +218,7 @@ export const verifyOtp = async (req, res) => {
   const { email, otp, newPassword } = req.body;
 
   try {
-    // Check all required fields
+   
     if (!email || !otp || !newPassword) {
       return res.status(400).json({ message: "Email, OTP, and new password are required" });
     }
