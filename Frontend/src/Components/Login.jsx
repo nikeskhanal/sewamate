@@ -10,10 +10,9 @@ const Login = () => {
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     try {
       const res = await fetch("http://localhost:5000/api/users/login", {
         method: "POST",
@@ -22,16 +21,17 @@ const Login = () => {
         },
         body: JSON.stringify(form),
       });
-
+  
       const data = await res.json();
-
+  
       if (!res.ok) {
         alert(data.message || "Login failed");
         return;
       }
-
+  
+      // Corrected the line where you're storing the userId
       localStorage.setItem("token", data.token);
-
+      localStorage.setItem("userId", data.user._id);  // Changed this line
       if (data.user.role === "worker") {
         navigate("/worker-dashboard");
       } else if (data.user.role === "customer") {
@@ -44,7 +44,7 @@ const Login = () => {
       alert("Something went wrong. Try again.");
     }
   };
-
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-500 px-4">
       <div className="bg-white shadow-2xl rounded-2xl w-full max-w-md p-8">

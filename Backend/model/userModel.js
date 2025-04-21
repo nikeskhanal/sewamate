@@ -38,11 +38,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  
-  
+
   role: {
     type: String,
-    enum: ["customer", "worker"],
+    enum: ["customer", "worker", "admin"],
     required: true,
   },
   servicesOffered: [
@@ -69,7 +68,14 @@ const userSchema = new mongoose.Schema({
   otpExpiry: {
     type: Date,
     default: null,
-  }
+  },
+
+ 
+  status: {
+    type: String,
+    enum: ["pending", "approved"], 
+    default: "approved", 
+  },
 });
 
 userSchema.index({ location: "2dsphere" });

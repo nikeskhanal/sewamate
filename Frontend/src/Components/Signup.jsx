@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Mail, Lock, User, Phone, MapPin, Eye, EyeOff } from "lucide-react";
-import axios from "axios"; // Import axios
+import axios from "axios";
 
 const Signup = () => {
   const [form, setForm] = useState({
@@ -9,12 +9,12 @@ const Signup = () => {
     password: "",
     contact: "",
     address: "",
-    role: "customer",
+    role: "customer", // Default role is customer
   });
 
   const [showPassword, setShowPassword] = useState(false);
-  const [successMessage, setSuccessMessage] = useState(""); // Success message state
-  const [errorMessage, setErrorMessage] = useState(""); // Error message state
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -41,6 +41,7 @@ const Signup = () => {
             type: "Point",
             coordinates: coordinates,
           },
+          status: form.role === "worker" ? "pending" : "approved", // Set worker's status as pending
         };
 
         try {
@@ -48,17 +49,11 @@ const Signup = () => {
             "http://localhost:5000/api/users/create",
             formData
           );
-          console.log("User created:", response.data);
-          setSuccessMessage(
-            "Account created successfully! You can now log in."
-          ); // Set success message
-          setErrorMessage(""); // Clear any previous error messages
+          setSuccessMessage("Account created successfully! You can now log in.");
+          setErrorMessage("");
         } catch (error) {
-          console.error("Error creating user:", error);
           if (error.response && error.response.status === 409) {
-            setErrorMessage(
-              error.response.data.error || "Email or contact already in use."
-            );
+            setErrorMessage("Email or contact already in use.");
           } else {
             setErrorMessage("Error creating user. Please try again.");
           }
@@ -66,7 +61,6 @@ const Signup = () => {
         }
       },
       (error) => {
-        console.error("Geolocation error:", error);
         alert("Unable to fetch your location. Please allow location access.");
       }
     );
@@ -79,7 +73,6 @@ const Signup = () => {
           Create Your Account
         </h2>
 
-        {/* Success/Error Message */}
         {successMessage && (
           <div className="bg-green-100 text-green-800 p-3 rounded-lg text-center mb-4">
             {successMessage}
@@ -167,6 +160,19 @@ const Signup = () => {
               required
               className="pl-10 pr-4 py-2 w-full border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500"
             />
+          </div>
+
+          {/* Role Selection */}
+          <div className="relative">
+            <select
+              name="role"
+              value={form.role}
+              onChange={handleChange}
+              className="pl-4 pr-4 py-2 w-full border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500"
+            >
+              <option value="customer">Customer</option>
+              <option value="worker">Worker</option>
+            </select>
           </div>
 
           {/* Submit */}

@@ -168,9 +168,56 @@ export const loginUser = async (req, res) => {
   }
 };
 
+export const verifyworker = async (req, res) => {
+  try {
+const user = await User.findById(req.user._id); 
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (user.role !== "worker" || user.status !== "approved") {
+      return res.status(403).json({ message: "You are not an approved worker" });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error("Error in verifyworker:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
+export const approveWorker = async (req, res) => {
+  try {
+    // Find the worker by their ID
+    const worker = await User.findById(req.params.id);
+    if (!worker || worker.role !== "worker") {
+      return res.status(404).json({ message: "Worker not found or invalid role" });
+    }
 
+    // Update the status to approved
+    worker.status = "approved";
+    await worker.save();
 
+    // Return the updated worker data in the response
+    res.status(200).json({
+      message: "Worker approved successfully",
+      worker,  // Send the updated worker data back
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getWorkers = async (req, res) => {
+  try {
+    const pendingWorkers = await User.find({
+      role: 'worker',
+      status: 'pending',
+    });
+    res.status(200).json(pendingWorkers);
+  } catch (err) {
+    console.error('Error fetching pending workers:', err);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
 
 
 

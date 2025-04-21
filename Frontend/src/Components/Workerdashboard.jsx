@@ -1,103 +1,100 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-const ForgotPassword = () => {
-  const [email, setEmail] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState("");
-  const [password, setPassword] = useState("");
+const WorkerDashboard = () => {
+  const [user, setUser] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
+  const navigate = useNavigate();
 
-  const handleSendOtp = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/api/users/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const userId = localStorage.getItem("userId");
+      const token = localStorage.getItem("token");
+      
+      console.log("userId:", userId);
+      console.log("token:", token);
+      
+      if (!userId || !token) {
+        setErrorMessage("Unauthorized. Please log in again.");
+        return;
+      }
 
-      const data = await res.json();
-      if (!res.ok) return alert(data.message || "Failed to send OTP");
+      try {
+        const response = await axios.get(`http://localhost:5000/api/users/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-      alert("OTP sent to your email");
-      setOtpSent(true);
-    } catch (err) {
-      console.error(err);
-      alert("Something went wrong");
-    }
-  };
+        const userData = response.data;
+        if (userData.role === "worker" && userData.status !== "approved") {
+          navigate("/pending");
+        } else {
+          setUser(userData);
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        setErrorMessage("Error fetching user data.");
+      }
+    };
 
-  const handleVerifyOtp = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/api/users/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          otp,
-          newPassword: password, // ✅ must match backend key
-        }),
-      });
+    fetchUserProfile();
+  }, [navigate]);
 
-      const data = await res.json();
-      if (!res.ok) return alert(data.message || "OTP verification failed");
+  if (errorMessage) {
+    return (
+      <div className="text-center text-red-600">
+        <p>{errorMessage}</p>
+      </div>
+    );
+  }
 
-      alert("Password reset successfully");
-    } catch (err) {
-      console.error(err);
-      alert("Something went wrong");
-    }
-  };
+  if (!user) {
+    return (
+      <div className="text-center text-gray-600">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-500 to-pink-500 px-4">
-      <div className="bg-white shadow-2xl rounded-2xl w-full max-w-md p-8">
-        <h2 className="text-2xl font-bold text-center text-indigo-600 mb-6">
-          Forgot Password
+    <div className="min-h-screen bg-gradient-to-r from-blue-500 to-purple-500 p-8">
+      <div className="bg-white shadow-2xl rounded-2xl p-8">
+        <h2 className="text-3xl font-bold text-center text-indigo-600 mb-6">
+          Welcome, {user.name}
         </h2>
 
-        <div className="space-y-4">
-          <input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
+        {/* Worker Dashboard Content */}
+        <div className="space-y-5">
+          <div>
+            <h3 className="text-xl font-semibold">Profile</h3>
+            <p>Email: {user.email}</p>
+            <p>Contact: {user.contact}</p>
+            <p>Address: {user.address}</p>
+          </div>
 
-          {!otpSent ? (
-            <button
-              onClick={handleSendOtp}
-              className="w-full bg-indigo-600 text-white py-2 rounded-xl font-semibold hover:bg-indigo-700 transition"
-            >
-              Send OTP
-            </button>
-          ) : (
-            <>
-              <input
-                type="text"
-                placeholder="Enter OTP"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-              <input
-                type="password"
-                placeholder="Enter new password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-              <button
-                onClick={handleVerifyOtp}
-                className="w-full bg-green-600 text-white py-2 rounded-xl font-semibold hover:bg-green-700 transition"
-              >
-                Reset Password
-              </button>
-            </>
-          )}
+          <div>
+            <h3 className="text-xl font-semibold">Services Offered</h3>
+            {user.servicesOffered && user.servicesOffered.length > 0 ? (
+              <ul>
+                {user.servicesOffered.map((service, index) => (
+                  <li key={index}>{service}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>No services offered yet.</p>
+            )}
+          </div>
+
+          <div>
+            <h3 className="text-xl font-semibold">Job Requests</h3>
+            <p>Here you can view and accept job requests.</p>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default ForgotPassword;
+export default WorkerDashboard;
