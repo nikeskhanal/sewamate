@@ -186,20 +186,18 @@ const user = await User.findById(req.user._id);
 
 export const approveWorker = async (req, res) => {
   try {
-    // Find the worker by their ID
+   
     const worker = await User.findById(req.params.id);
     if (!worker || worker.role !== "worker") {
       return res.status(404).json({ message: "Worker not found or invalid role" });
     }
-
-    // Update the status to approved
     worker.status = "approved";
     await worker.save();
 
-    // Return the updated worker data in the response
+   
     res.status(200).json({
       message: "Worker approved successfully",
-      worker,  // Send the updated worker data back
+      worker,  
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -292,5 +290,86 @@ export const verifyOtp = async (req, res) => {
   } catch (err) {
     console.error("verifyOtp error:", err);
     res.status(500).json({ error: err.message });
+  }
+};
+
+
+export const getNearbyApprovedWorkers = async (req, res) => {
+  try {
+    const { service, lng, lat } = req.query;
+
+    if (!service || !lng || !lat) {
+      return res.status(400).json({ message: "Missing required parameters" });
+    }
+
+    const workers = await User.find({
+      role: "worker",
+      status: "approved",
+      servicesOffered: { $in: [service] },
+      location: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [parseFloat(lng), parseFloat(lat)],
+          },
+          $maxDistance: 100000, 
+        },
+      },
+    });
+
+    res.status(200).json(workers);
+  } catch (error) {
+    console.error("Error fetching filtered workers:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+export const getApprovedWorkers = async (req, res) => {
+  try {
+    const approvedWorkers = await User.find({
+      role: "worker",
+      status: "approved",
+    });
+
+    res.status(200).json(approvedWorkers);
+  } catch (error) {
+    console.error("Error fetching approved workers:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+
+
+
+
+export const getMyProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+  
+export const updateProfilePhoto = async (req, res) => {
+  try {
+    // Check if a file is uploaded
+    if (!req.file) {
+      return res.status(400).json({ message: "No photo uploaded" });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const photo = req.file.filename; 
+    
+    user.photo = photo;
+    await user.save();
+
+    res.status(200).json({ message: "Profile photo updated", photo });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to update photo" });
   }
 };

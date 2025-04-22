@@ -12,6 +12,7 @@ import CreateEmployee from "./Components/CreateEmployee.jsx";
 import WorkerDashboard from "./Components/Workerdashboard.jsx";
 import Pending from "./Components/Pending.jsx";
 import ApproveEmployee from "./Components/ApproveEmployee.jsx";
+import MyProfile from "./Components/MyProfile.jsx";
 
 const App = () => {
   return (
@@ -27,6 +28,7 @@ const App = () => {
         <Route path="/worker-dashboard" element={< WorkerDashboard/>} />
         <Route path="/pending" element={< Pending/>} />
         <Route path="/worker-request" element={< ApproveEmployee/>} />
+        <Route path="/profile" element={< MyProfile/>} />
 
        
       </Routes>

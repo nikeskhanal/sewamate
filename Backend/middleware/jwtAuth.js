@@ -9,7 +9,13 @@ export const jwtAuth = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, "iamnikesh");
-    req.user = decoded.user;  
+
+    // Assign user ID and role from the decoded token
+    req.user = {
+      _id: decoded.userId,
+      role: decoded.role,
+    };
+
     next();
   } catch (error) {
     res.status(403).json({ message: "Invalid or expired token" });

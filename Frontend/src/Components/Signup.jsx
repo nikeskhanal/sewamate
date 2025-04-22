@@ -10,11 +10,26 @@ const Signup = () => {
     contact: "",
     address: "",
     role: "customer", // Default role is customer
+    servicesOffered: [], // Store selected services
   });
 
   const [showPassword, setShowPassword] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+
+  
+  const availableServices = [
+    "Plumbing",
+    "Electrical",
+    "Cleaning",
+    "Painting",
+    "Carpentry",
+    "Gardening",
+    "Baby Sitter",
+    "cook",
+    "pet sitter",
+
+  ];
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -174,6 +189,37 @@ const Signup = () => {
               <option value="worker">Worker</option>
             </select>
           </div>
+
+          {/* Services Offered (only for workers) */}
+          {form.role === "worker" && (
+            <div>
+              <label className="block font-semibold text-gray-700 mb-2">
+                Services Offered:
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {availableServices.map((service) => (
+                  <label key={service} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      value={service}
+                      checked={form.servicesOffered.includes(service)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setForm((prevForm) => ({
+                          ...prevForm,
+                          servicesOffered: prevForm.servicesOffered.includes(value)
+                            ? prevForm.servicesOffered.filter((s) => s !== value)
+                            : [...prevForm.servicesOffered, value],
+                        }));
+                      }}
+                      className="accent-pink-600"
+                    />
+                    <span>{service}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Submit */}
           <button

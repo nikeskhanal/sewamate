@@ -8,6 +8,9 @@ connectDatabase();
 
 app.use(cors());
 app.use(express.json()); 
+app.use("/uploads", express.static("public/uploads"));
+
+
 app.use("/api/users", userRoutes);
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

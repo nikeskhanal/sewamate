@@ -36,6 +36,8 @@ const Login = () => {
         navigate("/worker-dashboard");
       } else if (data.user.role === "customer") {
         navigate("/customer-dashboard");
+      } else if (data.user.role === "admin") {
+        navigate("/admin");
       } else {
         alert("Unknown user role");
       }

@@ -2,6 +2,7 @@ import express from "express";
 import userModel from "../model/userModel.js";
 import { jwtAuth } from "../middleware/jwtAuth.js";
 import { adminAuth } from "../middleware/adminAuth.js";
+import upload from "../multer/multer.js";
 import {
   verifyworker,
   createUser,
@@ -13,6 +14,10 @@ import {
   verifyOtp,
   approveWorker,
   getWorkers,
+  getApprovedWorkers,
+  getNearbyApprovedWorkers,
+  getMyProfile,
+  updateProfilePhoto,
 } from "../controllers/userController.js";
 
 
@@ -25,19 +30,25 @@ router.post("/create", createUser);
 router.post("/login", loginUser);
 
 
-router.get("/admin", adminAuth, getAllUsers); 
+router.get("/searchworkers", getNearbyApprovedWorkers);
 
-router.put("/approve/:id", jwtAuth, adminAuth, approveWorker); 
+router.get("/admin",  getAllUsers); 
 
+
+router.get("/me",  jwtAuth, getMyProfile);
+
+router.put("/me/photo", jwtAuth, upload.single("photo"), updateProfilePhoto);
 
 router.get("/workers", jwtAuth, getWorkers);
 
+router.get("/hiredworkers", getApprovedWorkers)
 
 router.post("/forgot-password", forgotPassword);
 
 
 router.post("/verify-otp", verifyOtp);
 
+router.put("/approve/:id", jwtAuth,  approveWorker); 
 
 router.get("/:id", jwtAuth, getUserById); 
 
