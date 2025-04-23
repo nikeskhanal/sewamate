@@ -56,7 +56,7 @@ router.get("/:id", jwtAuth, getUserById);
 router.get("/verifyworker/:id", jwtAuth, verifyworker);
 
 
-router.delete("/:id", jwtAuth, adminAuth, deleteUser); 
+router.delete("/:id", jwtAuth, deleteUser); 
 
 export default router;
 

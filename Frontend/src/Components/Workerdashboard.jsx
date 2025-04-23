@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import Navbar from "./Navbar";
 
 const WorkerDashboard = () => {
   const [user, setUser] = useState(null);
@@ -59,6 +60,8 @@ const WorkerDashboard = () => {
   }
 
   return (
+    <div>
+      <Navbar/>
     <div className="min-h-screen bg-gradient-to-r from-blue-500 to-purple-500 p-8">
       <div className="bg-white shadow-2xl rounded-2xl p-8">
         <h2 className="text-3xl font-bold text-center text-indigo-600 mb-6">
@@ -93,6 +96,7 @@ const WorkerDashboard = () => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };
