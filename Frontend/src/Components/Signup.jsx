@@ -1,6 +1,8 @@
+
 import React, { useState } from "react";
 import { Mail, Lock, User, Phone, MapPin, Eye, EyeOff } from "lucide-react";
 import axios from "axios";
+import login from "../assets/bgg.jpg";
 
 const Signup = () => {
   const [form, setForm] = useState({
@@ -9,15 +11,15 @@ const Signup = () => {
     password: "",
     contact: "",
     address: "",
-    role: "customer", // Default role is customer
-    servicesOffered: [], // Store selected services
+    role: "customer",
+    servicesOffered: [],
   });
 
   const [showPassword, setShowPassword] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  
   const availableServices = [
     "Plumbing",
     "Electrical",
@@ -28,7 +30,6 @@ const Signup = () => {
     "Baby Sitter",
     "cook",
     "pet sitter",
-
   ];
 
   const handleChange = (e) => {
@@ -38,10 +39,24 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (form.role === "worker" && form.servicesOffered.length === 0) {
+      setErrorMessage("Please select at least one service you offer.");
+      return;
+    }
+
+    if (!/^\d{10}$/.test(form.contact)) {
+      setErrorMessage("Please enter a valid 10-digit phone number.");
+      return;
+    }
+
     if (!navigator.geolocation) {
       alert("Geolocation is not supported by your browser");
       return;
     }
+
+    setLoading(true);
+    setSuccessMessage("Fetching your location, please wait...");
+    setErrorMessage("");
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -56,7 +71,7 @@ const Signup = () => {
             type: "Point",
             coordinates: coordinates,
           },
-          status: form.role === "worker" ? "pending" : "approved", // Set worker's status as pending
+          status: form.role === "worker" ? "pending" : "approved",
         };
 
         try {
@@ -73,18 +88,31 @@ const Signup = () => {
             setErrorMessage("Error creating user. Please try again.");
           }
           setSuccessMessage("");
+        } finally {
+          setLoading(false);
         }
       },
       (error) => {
         alert("Unable to fetch your location. Please allow location access.");
+        setLoading(false);
+        setSuccessMessage("");
       }
     );
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-500 px-4">
-      <div className="bg-white shadow-2xl rounded-2xl w-full max-w-lg p-8">
-        <h2 className="text-3xl font-bold text-center text-pink-600 mb-6">
+    <div className="relative min-h-screen flex items-center justify-center px-4">
+      <div
+        className="absolute inset-0 bg-black/40 z-0"
+        style={{
+          backgroundImage: `url(${login})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      ></div>
+
+      <div className="relative z-10 bg-white/80 backdrop-blur-lg shadow-[0_10px_40px_rgba(0,0,0,0.3)] border border-white/30 rounded-2xl w-full max-w-md p-8">
+        <h2 className="text-3xl font-bold text-center text-blue-600 mb-6">
           Create Your Account
         </h2>
 
@@ -101,7 +129,6 @@ const Signup = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Name */}
           <div className="relative">
             <User className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
             <input
@@ -111,11 +138,11 @@ const Signup = () => {
               value={form.name}
               onChange={handleChange}
               required
-              className="pl-10 pr-4 py-2 w-full border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500"
+              autoComplete="name"
+              className="pl-10 pr-4 py-2 w-full border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
-          {/* Email */}
           <div className="relative">
             <Mail className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
             <input
@@ -125,11 +152,11 @@ const Signup = () => {
               value={form.email}
               onChange={handleChange}
               required
-              className="pl-10 pr-4 py-2 w-full border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500"
+              autoComplete="email"
+              className="pl-10 pr-4 py-2 w-full border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
-          {/* Password */}
           <div className="relative">
             <Lock className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
             <input
@@ -139,7 +166,8 @@ const Signup = () => {
               value={form.password}
               onChange={handleChange}
               required
-              className="pl-10 pr-10 py-2 w-full border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500"
+              autoComplete="new-password"
+              className="pl-10 pr-10 py-2 w-full border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <div
               className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 cursor-pointer"
@@ -149,7 +177,6 @@ const Signup = () => {
             </div>
           </div>
 
-          {/* Contact */}
           <div className="relative">
             <Phone className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
             <input
@@ -159,11 +186,11 @@ const Signup = () => {
               value={form.contact}
               onChange={handleChange}
               required
-              className="pl-10 pr-4 py-2 w-full border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500"
+              autoComplete="tel"
+              className="pl-10 pr-4 py-2 w-full border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
-          {/* Address */}
           <div className="relative">
             <MapPin className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
             <input
@@ -173,24 +200,23 @@ const Signup = () => {
               value={form.address}
               onChange={handleChange}
               required
-              className="pl-10 pr-4 py-2 w-full border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500"
+              autoComplete="street-address"
+              className="pl-10 pr-4 py-2 w-full border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
-          {/* Role Selection */}
           <div className="relative">
             <select
               name="role"
               value={form.role}
               onChange={handleChange}
-              className="pl-4 pr-4 py-2 w-full border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500"
+              className="pl-4 pr-4 py-2 w-full border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="customer">Customer</option>
               <option value="worker">Worker</option>
             </select>
           </div>
 
-          {/* Services Offered (only for workers) */}
           {form.role === "worker" && (
             <div>
               <label className="block font-semibold text-gray-700 mb-2">
@@ -212,7 +238,7 @@ const Signup = () => {
                             : [...prevForm.servicesOffered, value],
                         }));
                       }}
-                      className="accent-pink-600"
+                      className="text-blue-600"
                     />
                     <span>{service}</span>
                   </label>
@@ -221,21 +247,20 @@ const Signup = () => {
             </div>
           )}
 
-          {/* Submit */}
           <button
             type="submit"
-            className="w-full bg-pink-600 hover:bg-pink-700 text-white py-2 rounded-xl font-semibold transition-all"
+            disabled={loading}
+            className={`w-full ${
+              loading ? "bg-blue-400" : "bg-blue-600 hover:bg-blue-700"
+            } text-white py-2 rounded-xl font-semibold transition-all`}
           >
-            Sign Up
+            {loading ? "Signing Up..." : "Sign Up"}
           </button>
         </form>
 
         <p className="text-center text-gray-500 text-sm mt-4">
           Already have an account?{" "}
-          <a
-            href="/login"
-            className="text-pink-600 hover:underline font-medium"
-          >
+          <a href="/login" className="text-blue-600 hover:underline font-medium">
             Login
           </a>
         </p>

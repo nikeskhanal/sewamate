@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import Navbar from "./Navbar";
 
 const Admindashboard = () => {
   const [users, setUsers] = useState([]);
@@ -48,6 +49,8 @@ const Admindashboard = () => {
   if (loading) return <p>Loading...</p>;
 
   return (
+    <div>
+      <Navbar/>
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
@@ -92,6 +95,7 @@ const Admindashboard = () => {
       ) : (
         <p>No users found.</p>
       )}
+    </div>
     </div>
   );
 };
