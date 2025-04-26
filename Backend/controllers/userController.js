@@ -9,8 +9,6 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-
-
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 export const createUser = async (req, res) => {
@@ -63,7 +61,7 @@ export const getUserById = async (req, res) => {
   }
 };
 
-// Update user by ID
+
 export const updateUser = async (req, res) => {
   try {
     const updatedUser = await User.findByIdAndUpdate(
@@ -78,7 +76,7 @@ export const updateUser = async (req, res) => {
   }
 };
 
-// Delete user by ID
+
 export const deleteUser = async (req, res) => {
   try {
     const deletedUser = await User.findByIdAndDelete(req.params.id);
@@ -121,7 +119,7 @@ export const loginUser = async (req, res) => {
     console.log("Received email:", email);
     console.log("Received password:", password);
 
-    // Find user by email
+   
     const user = await User.findOne({ email });
     if (!user) {
       console.log("User not found.");
@@ -130,7 +128,7 @@ export const loginUser = async (req, res) => {
 
     console.log("User found:", user);
 
-    // Compare entered password with the hashed password in the database
+    
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       console.log("Password does not match.");
@@ -139,7 +137,6 @@ export const loginUser = async (req, res) => {
 
     console.log("Password matched.");
 
-    // Generate JWT token
     const token = jwt.sign(
       { userId: user._id, role: user.role },
       "iamnikesh",  // Replace with your secret key in production
@@ -167,6 +164,7 @@ export const loginUser = async (req, res) => {
     res.status(500).json({ error: "Something went wrong during login." });
   }
 };
+
 
 export const verifyworker = async (req, res) => {
   try {
@@ -238,8 +236,8 @@ export const forgotPassword = async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.EMAIL_USER,  // Use the environment variable for email
-        pass: process.env.EMAIL_PASS,  // Use the environment variable for app password
+        user: process.env.EMAIL_USER,  
+        pass: process.env.EMAIL_PASS, 
       },
     });
 
