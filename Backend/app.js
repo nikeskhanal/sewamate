@@ -14,7 +14,7 @@ app.use("/uploads", express.static("public/uploads"));
 
 app.use("/api/users", userRoutes);
 
-app.use('/api/messages', messageRoutes);
+app.use('/api/chat', messageRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
