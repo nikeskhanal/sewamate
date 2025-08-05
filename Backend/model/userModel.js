@@ -44,11 +44,10 @@ const userSchema = new mongoose.Schema({
     enum: ["customer", "worker", "admin"],
     required: true,
   },
-  servicesOffered: [
-    {
-      type: String,
-    },
-  ],
+  servicesOffered: {
+    type: String,
+    default: "",
+  },
   photo: {
     type: String,
     default: "",
@@ -70,11 +69,22 @@ const userSchema = new mongoose.Schema({
     default: null,
   },
 
- 
   status: {
     type: String,
-    enum: ["pending", "approved"], 
-    default: "approved", 
+    enum: ["pending", "approved"],
+    default: "approved",
+  },
+  experience: {
+    type: Number,
+    default: null,
+  },
+  cv: {
+    type: String,
+    default: "",
+  },
+  ratePerHour: {
+    type: Number,
+    default: null,
   },
 });
 

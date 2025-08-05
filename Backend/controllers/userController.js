@@ -1,33 +1,46 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv"
-import User from "../model/userModel.js"; 
+import dotenv from "dotenv";
+import User from "../model/userModel.js";
 import nodemailer from "nodemailer";
-import path from "path"
-import { fileURLToPath } from 'url';
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 export const createUser = async (req, res) => {
   try {
     const { password, ...otherFields } = req.body;
 
-    if (!password || !otherFields.email || !otherFields.name || !otherFields.contact) {
+    if (
+      !password ||
+      !otherFields.email ||
+      !otherFields.name ||
+      !otherFields.contact
+    ) {
       return res.status(400).json({ error: "Required fields are missing" });
     }
 
-    const existingUser = await User.findOne({ 
-      $or: [{ email: otherFields.email }, { contact: otherFields.contact }] 
+    const existingUser = await User.findOne({
+      $or: [{ email: otherFields.email }, { contact: otherFields.contact }],
     });
     if (existingUser) {
       return res.status(409).json({ error: "Email or contact already in use" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ ...otherFields, password: hashedPassword });
+    // Add experience and cv if worker
+    let userData = { ...otherFields, password: hashedPassword };
+    if (otherFields.role === "worker") {
+      let exp = req.body.experience;
+      if (Array.isArray(exp)) exp = exp[0];
+      userData.experience = Number(exp);
+      if (req.file) userData.cv = req.file.filename;
+    }
+    const user = new User(userData);
     const savedUser = await user.save();
 
     const { password: _, ...userWithoutPassword } = savedUser._doc;
@@ -37,8 +50,6 @@ export const createUser = async (req, res) => {
   }
 };
 
-
-
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find();
@@ -47,9 +58,6 @@ export const getAllUsers = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-
-
 
 export const getUserById = async (req, res) => {
   try {
@@ -61,7 +69,6 @@ export const getUserById = async (req, res) => {
   }
 };
 
-
 export const updateUser = async (req, res) => {
   try {
     const updatedUser = await User.findByIdAndUpdate(
@@ -69,24 +76,24 @@ export const updateUser = async (req, res) => {
       { $set: req.body },
       { new: true }
     );
-    if (!updatedUser) return res.status(404).json({ message: "User not found" });
+    if (!updatedUser)
+      return res.status(404).json({ message: "User not found" });
     res.json(updatedUser);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
 
-
 export const deleteUser = async (req, res) => {
   try {
     const deletedUser = await User.findByIdAndDelete(req.params.id);
-    if (!deletedUser) return res.status(404).json({ message: "User not found" });
+    if (!deletedUser)
+      return res.status(404).json({ message: "User not found" });
     res.json({ message: "User deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 export const findNearbyWorkers = async (req, res) => {
   try {
@@ -111,7 +118,6 @@ export const findNearbyWorkers = async (req, res) => {
   }
 };
 
-
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -119,7 +125,6 @@ export const loginUser = async (req, res) => {
     console.log("Received email:", email);
     console.log("Received password:", password);
 
-   
     const user = await User.findOne({ email });
     if (!user) {
       console.log("User not found.");
@@ -128,7 +133,6 @@ export const loginUser = async (req, res) => {
 
     console.log("User found:", user);
 
-    
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       console.log("Password does not match.");
@@ -139,7 +143,7 @@ export const loginUser = async (req, res) => {
 
     const token = jwt.sign(
       { userId: user._id, role: user.role },
-      "iamnikesh",  // Replace with your secret key in production
+      "iamnikesh", // Replace with your secret key in production
       { expiresIn: "1h" }
     );
 
@@ -165,15 +169,16 @@ export const loginUser = async (req, res) => {
   }
 };
 
-
 export const verifyworker = async (req, res) => {
   try {
-const user = await User.findById(req.user._id); 
+    const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
     if (user.role !== "worker" || user.status !== "approved") {
-      return res.status(403).json({ message: "You are not an approved worker" });
+      return res
+        .status(403)
+        .json({ message: "You are not an approved worker" });
     }
     res.json(user);
   } catch (error) {
@@ -184,18 +189,18 @@ const user = await User.findById(req.user._id);
 
 export const approveWorker = async (req, res) => {
   try {
-   
     const worker = await User.findById(req.params.id);
     if (!worker || worker.role !== "worker") {
-      return res.status(404).json({ message: "Worker not found or invalid role" });
+      return res
+        .status(404)
+        .json({ message: "Worker not found or invalid role" });
     }
     worker.status = "approved";
     await worker.save();
 
-   
     res.status(200).json({
       message: "Worker approved successfully",
-      worker,  
+      worker,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -205,18 +210,15 @@ export const approveWorker = async (req, res) => {
 export const getWorkers = async (req, res) => {
   try {
     const pendingWorkers = await User.find({
-      role: 'worker',
-      status: 'pending',
+      role: "worker",
+      status: "pending",
     });
     res.status(200).json(pendingWorkers);
   } catch (err) {
-    console.error('Error fetching pending workers:', err);
-    res.status(500).json({ message: 'Internal Server Error' });
+    console.error("Error fetching pending workers:", err);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
-
-
 
 export const forgotPassword = async (req, res) => {
   const { email } = req.body;
@@ -226,25 +228,25 @@ export const forgotPassword = async (req, res) => {
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const otp = Math.floor(100000 + Math.random() * 900000); 
-    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); 
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
 
     user.resetOTP = otp;
     user.otpExpiry = otpExpiry;
     await user.save();
 
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER,  
-        pass: process.env.EMAIL_PASS, 
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: 'Password Reset OTP',
+      subject: "Password Reset OTP",
       text: `Your OTP for password reset is: ${otp}. It is valid for 5 minutes.`,
     };
 
@@ -261,9 +263,10 @@ export const verifyOtp = async (req, res) => {
   const { email, otp, newPassword } = req.body;
 
   try {
-   
     if (!email || !otp || !newPassword) {
-      return res.status(400).json({ message: "Email, OTP, and new password are required" });
+      return res
+        .status(400)
+        .json({ message: "Email, OTP, and new password are required" });
     }
 
     const user = await User.findOne({ email });
@@ -291,7 +294,6 @@ export const verifyOtp = async (req, res) => {
   }
 };
 
-
 export const getNearbyApprovedWorkers = async (req, res) => {
   try {
     const { service, lng, lat } = req.query;
@@ -310,7 +312,7 @@ export const getNearbyApprovedWorkers = async (req, res) => {
             type: "Point",
             coordinates: [parseFloat(lng), parseFloat(lat)],
           },
-          $maxDistance: 100000, 
+          $maxDistance: 100000,
         },
       },
     });
@@ -336,10 +338,6 @@ export const getApprovedWorkers = async (req, res) => {
   }
 };
 
-
-
-
-
 export const getMyProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select("-password");
@@ -349,10 +347,9 @@ export const getMyProfile = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-  
+
 export const updateProfilePhoto = async (req, res) => {
   try {
-    // Check if a file is uploaded
     if (!req.file) {
       return res.status(400).json({ message: "No photo uploaded" });
     }
@@ -360,8 +357,8 @@ export const updateProfilePhoto = async (req, res) => {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const photo = req.file.filename; 
-    
+    const photo = req.file.filename;
+
     user.photo = photo;
     await user.save();
 
@@ -369,5 +366,34 @@ export const updateProfilePhoto = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to update photo" });
+  }
+};
+export const getEmployeeProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (user.role !== "worker") {
+      return res
+        .status(403)
+        .json({ message: "This user is not a service provider" });
+    }
+
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+export const updateWorkerRate = async (req, res) => {
+  try {
+    const worker = await User.findById(req.params.id);
+    if (!worker || worker.role !== "worker") {
+      return res.status(404).json({ message: "Worker not found" });
+    }
+    worker.ratePerHour = req.body.ratePerHour;
+    await worker.save();
+    res.status(200).json({ message: "Rate updated", worker });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
