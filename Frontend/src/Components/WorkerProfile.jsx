@@ -195,26 +195,33 @@ const WorkerProfile = () => {
                   })()}
 
                   {/* Experience & Rate */}
-                  {(worker.experience !== undefined || worker.ratePerHour !== undefined) && (
+                  {(worker.experience !== undefined ||
+                    worker.ratePerHour !== undefined) && (
                     <div className="bg-gray-50 p-4 rounded-lg flex gap-6">
-                      {worker.experience !== undefined && worker.experience !== null && (
-                        <div>
-                          <h3 className="font-medium text-gray-700 mb-1 flex items-center gap-2">
-                            <Briefcase className="w-4 h-4 text-green-500" />
-                            Experience
-                          </h3>
-                          <span className="text-green-700 font-semibold text-sm">{worker.experience} yrs</span>
-                        </div>
-                      )}
-                      {worker.ratePerHour !== undefined && worker.ratePerHour !== null && (
-                        <div>
-                          <h3 className="font-medium text-gray-700 mb-1 flex items-center gap-2">
-                            <Briefcase className="w-4 h-4 text-yellow-500" />
-                            Rate per Hour
-                          </h3>
-                          <span className="text-yellow-700 font-semibold text-sm">₹{worker.ratePerHour}/hr</span>
-                        </div>
-                      )}
+                      {worker.experience !== undefined &&
+                        worker.experience !== null && (
+                          <div>
+                            <h3 className="font-medium text-gray-700 mb-1 flex items-center gap-2">
+                              <Briefcase className="w-4 h-4 text-green-500" />
+                              Experience
+                            </h3>
+                            <span className="text-green-700 font-semibold text-sm">
+                              {worker.experience} yrs
+                            </span>
+                          </div>
+                        )}
+                      {worker.ratePerHour !== undefined &&
+                        worker.ratePerHour !== null && (
+                          <div>
+                            <h3 className="font-medium text-gray-700 mb-1 flex items-center gap-2">
+                              <Briefcase className="w-4 h-4 text-yellow-500" />
+                              Rate per Hour
+                            </h3>
+                            <span className="text-yellow-700 font-semibold text-sm">
+                              ₹{worker.ratePerHour}/hr
+                            </span>
+                          </div>
+                        )}
                     </div>
                   )}
 

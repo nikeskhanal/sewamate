@@ -9,6 +9,8 @@ const WorkerDashboard = () => {
   const [messages, setMessages] = useState([]);
   const [selectedReceiver, setSelectedReceiver] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [newRequests, setNewRequests] = useState({});
+  const [showRequests, setShowRequests] = useState(false);
   const messageEndRef = useRef(null);
   const navigate = useNavigate();
 
@@ -96,6 +98,46 @@ const WorkerDashboard = () => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Track new message requests
+  useEffect(() => {
+    if (!user) return;
+    const fetchNewRequests = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:5000/api/chat/participants/${user._id}`
+        );
+        // Mark as new if participant has no messages yet
+        const requests = {};
+        for (const p of res.data) {
+          const msgRes = await axios.get(
+            `http://localhost:5000/api/messages/${user._id}/${p._id}`
+          );
+          if (!msgRes.data || msgRes.data.length === 0) {
+            requests[p._id] = true;
+          }
+        }
+        setNewRequests(requests);
+      } catch (err) {
+        setNewRequests({});
+      }
+    };
+    fetchNewRequests();
+  }, [user, participants]);
+
+  // Delete chat handler
+  const handleDeleteChat = async (participantId) => {
+    try {
+      await axios.delete(
+        `http://localhost:5000/api/chat/${user._id}/${participantId}`
+      );
+      setParticipants(participants.filter((p) => p._id !== participantId));
+    } catch (err) {
+      alert("Failed to delete chat.");
+    }
+  };
+
+  const newRequestCount = Object.keys(newRequests).length;
+
   if (errorMessage) {
     return (
       <div className="text-center text-red-600">
@@ -148,13 +190,30 @@ const WorkerDashboard = () => {
               })()}
             </div>
 
-            <div>
+            <div className="flex justify-between items-center mb-2">
               <h3 className="text-xl font-semibold mb-2">Chats</h3>
-              {participants.length === 0 ? (
-                <p>No messages yet.</p>
-              ) : (
-                <div className="space-y-4">
-                  {participants.map((p) => (
+              <button
+                className="relative bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded flex items-center"
+                onClick={() => setShowRequests((prev) => !prev)}
+              >
+                View Work Message
+                <span
+                  className={`ml-2 inline-block px-2 py-0.5 rounded-full text-xs font-bold ${
+                    newRequestCount > 0
+                      ? "bg-red-600 text-white"
+                      : "bg-gray-300 text-gray-700"
+                  }`}
+                >
+                  {newRequestCount > 0 ? newRequestCount : "None"}
+                </span>
+              </button>
+            </div>
+            {showRequests && (
+              <div className="space-y-4">
+                {participants.length === 0 ? (
+                  <p>No messages yet.</p>
+                ) : (
+                  participants.map((p) => (
                     <div
                       key={p._id}
                       className="flex items-center gap-4 bg-gray-100 p-3 rounded-lg shadow"
@@ -167,6 +226,11 @@ const WorkerDashboard = () => {
                       <div className="flex-1">
                         <div className="font-semibold">{p.name}</div>
                         <div className="text-xs text-gray-500">{p.email}</div>
+                        {newRequests[p._id] && (
+                          <span className="text-xs text-red-600 font-bold">
+                            New message request
+                          </span>
+                        )}
                       </div>
                       <button
                         className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded"
@@ -175,10 +239,10 @@ const WorkerDashboard = () => {
                         Message
                       </button>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

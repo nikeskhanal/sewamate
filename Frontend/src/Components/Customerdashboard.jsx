@@ -1,12 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import Navbar from "./Navbar";
-import {
-  LocateIcon,
-  SearchIcon,
-  Loader2,
-  MessageCircle,
-} from "lucide-react";
+import { LocateIcon, SearchIcon, Loader2, MessageCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const SERVICES = [
@@ -38,23 +33,59 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 };
 
 const WorkerCard = React.memo(({ worker, onMessage, onViewProfile }) => {
-  const [imageError, setImageError] = useState(false);
+  // Generate initials from name
+  const initials = useMemo(() => {
+    if (!worker.name) return "👤";
+    const names = worker.name.split(" ");
+    return names
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
+  }, [worker.name]);
+
+  // Generate a consistent color based on name
+  const avatarColor = useMemo(() => {
+    if (!worker.name) return "bg-blue-500";
+    const colors = [
+      "bg-blue-500",
+      "bg-green-500",
+      "bg-yellow-500",
+      "bg-red-500",
+      "bg-purple-500",
+      "bg-pink-500",
+      "bg-indigo-500",
+      "bg-teal-500",
+      "bg-orange-500",
+    ];
+    const hash = worker.name
+      .split("")
+      .reduce((acc, char) => char.charCodeAt(0) + acc, 0);
+    return colors[hash % colors.length];
+  }, [worker.name]);
 
   return (
     <div className="p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100">
       <div className="flex flex-col sm:flex-row gap-4 items-center">
         <div className="flex-shrink-0">
           <div className="relative">
-            <img
-              src={
-                !imageError && worker.photo
-                  ? `${API_BASE_URL}/uploads/${worker.photo}`
-                  : "https://via.placeholder.com/100?text=👤"
-              }
-              alt={worker.name}
-              className="w-20 h-20 rounded-full object-cover border-2 border-blue-500"
-              onError={() => setImageError(true)}
-            />
+            {worker.photo && worker.photo.trim() !== "" ? (
+              <img
+                src={`${API_BASE_URL}/uploads/${worker.photo}`}
+                alt={worker.name}
+                className="w-20 h-20 rounded-full object-cover border-2 border-blue-500"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "";
+                }}
+              />
+            ) : (
+              <div
+                className={`w-20 h-20 rounded-full ${avatarColor} flex items-center justify-center text-white text-2xl font-bold border-2 border-blue-500`}
+              >
+                {initials}
+              </div>
+            )}
             {worker.isAvailable === false && (
               <div className="absolute bottom-0 right-0 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                 Busy
@@ -64,9 +95,7 @@ const WorkerCard = React.memo(({ worker, onMessage, onViewProfile }) => {
         </div>
 
         <div className="flex-1 text-center sm:text-left">
-          <h3 className="text-lg font-semibold text-gray-800">
-            {worker.name}
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-800">{worker.name}</h3>
           <p className="text-sm text-gray-600 mt-1">
             {(() => {
               let services = Array.isArray(worker.servicesOffered)
@@ -93,11 +122,12 @@ const WorkerCard = React.memo(({ worker, onMessage, onViewProfile }) => {
                 {worker.experience} yrs exp
               </span>
             )}
-            {worker.ratePerHour !== undefined && worker.ratePerHour !== null && (
-              <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
-                ₹{worker.ratePerHour}/hr
-              </span>
-            )}
+            {worker.ratePerHour !== undefined &&
+              worker.ratePerHour !== null && (
+                <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
+                  ₹{worker.ratePerHour}/hr
+                </span>
+              )}
           </div>
         </div>
 
@@ -130,6 +160,9 @@ const CustomerDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [userLocation, setUserLocation] = useState(null);
+  const [showChats, setShowChats] = useState(false);
+  const [chatUsers, setChatUsers] = useState([]);
+  const [loadingChats, setLoadingChats] = useState(false);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -206,10 +239,29 @@ const CustomerDashboard = () => {
     });
   }, [workers, userLocation]);
 
+  // Replace with your actual user ID fetching logic (e.g., from auth context or localStorage)
+  const userId = localStorage.getItem("userId");
+
+  const handleViewChats = async () => {
+    if (!showChats) {
+      setLoadingChats(true);
+      try {
+        const res = await axios.get(
+          `${API_BASE_URL}/api/chat/participants/${userId}`
+        );
+        setChatUsers(res.data || []);
+      } catch (err) {
+        setChatUsers([]);
+      } finally {
+        setLoadingChats(false);
+      }
+    }
+    setShowChats((prev) => !prev);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-
       <main className="p-4 max-w-6xl mx-auto">
         <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 text-white mb-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -222,7 +274,6 @@ const CustomerDashboard = () => {
                 Connect with skilled workers in your neighborhood
               </p>
             </div>
-
             <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4 w-full md:w-auto">
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
@@ -270,6 +321,15 @@ const CustomerDashboard = () => {
                   )}
                   {loading ? "Searching..." : "Find Workers"}
                 </button>
+
+                <button
+                  onClick={handleViewChats}
+                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg transition-all bg-white text-green-700 hover:bg-green-50 border border-green-600"
+                  type="button"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  {showChats ? "Hide My Chats" : "View My Chats"}
+                </button>
               </div>
             </div>
           </div>
@@ -278,6 +338,53 @@ const CustomerDashboard = () => {
         {errorMessage && (
           <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
             {errorMessage}
+          </div>
+        )}
+
+        {showChats && (
+          <div className="mb-8 bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-green-600" /> My Chats
+            </h2>
+            {loadingChats ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="w-8 h-8 text-green-500 animate-spin" />
+              </div>
+            ) : chatUsers.length > 0 ? (
+              <ul className="divide-y divide-gray-100">
+                {chatUsers.map((user) => (
+                  <li
+                    key={user._id}
+                    className="py-3 flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-3">
+                      {user.photo ? (
+                        <img
+                          src={`${API_BASE_URL}/uploads/${user.photo}`}
+                          alt={user.name}
+                          className="w-10 h-10 rounded-full object-cover border"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white text-lg font-bold">
+                          {user.name ? user.name[0].toUpperCase() : "👤"}
+                        </div>
+                      )}
+                      <span className="font-medium text-gray-700">
+                        {user.name}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => navigate(`/chat/${user._id}`)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      View Chat
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="text-gray-500">No chats found.</div>
+            )}
           </div>
         )}
 

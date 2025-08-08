@@ -64,10 +64,19 @@ const Signup = () => {
   }, [form.email, form.password, form.contact]);
 
   const handleChange = (e) => {
+    // Prevent numbers in name field
+    if (e.target.name === "name") {
+      const value = e.target.value;
+      // Only allow letters, spaces, and basic punctuation
+      if (/^[a-zA-Z\s.'-]*$/.test(value)) {
+        setForm({ ...form, name: value });
+      }
+      return;
+    }
     // For experience field, only allow numbers and limit to 2 digits
     if (e.target.name === "experience") {
       const value = e.target.value;
-      
+
       // Only allow numbers and empty string
       if (value === "" || /^\d{0,2}$/.test(value)) {
         // Convert to number and validate range
@@ -76,9 +85,9 @@ const Signup = () => {
           setForm({ ...form, experience: value });
         }
       }
-    } else {
-      setForm({ ...form, [e.target.name]: e.target.value });
+      return;
     }
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleCvChange = (e) => {
@@ -125,39 +134,39 @@ const Signup = () => {
         setErrorMessage("Please select a service.");
         return false;
       }
-      
+
       // Experience validation
       const expNum = parseInt(form.experience);
       if (!form.experience || isNaN(expNum) || expNum < 0 || expNum > 40) {
         setErrorMessage("Please enter valid experience (0-40 years).");
         return false;
       }
-      
+
       if (!cvFile) {
         setErrorMessage("Please upload your CV.");
         return false;
       }
     }
-    
+
     return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     if (!navigator.geolocation) {
       setErrorMessage("Geolocation is not supported by your browser.");
       return;
     }
-    
+
     setLoading(true);
     setLocationFetching(true);
     setLocationStatus("Fetching your location...");
     setSuccessMessage("");
     setErrorMessage("");
-    
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const coordinates = [
@@ -165,23 +174,26 @@ const Signup = () => {
           position.coords.latitude,
         ];
         setLocationStatus("Location found! Creating account...");
-        
+
         const formData = new FormData();
         Object.entries(form).forEach(([key, value]) => {
           formData.append(key, value);
         });
-        
+
         formData.append("location[type]", "Point");
         formData.append("location[coordinates][]", coordinates[0]);
         formData.append("location[coordinates][]", coordinates[1]);
-        formData.append("status", form.role === "worker" ? "pending" : "approved");
-        
+        formData.append(
+          "status",
+          form.role === "worker" ? "pending" : "approved"
+        );
+
         if (form.role === "worker") {
           formData.append("experience", form.experience);
           formData.append("servicesOffered", selectedService);
           if (cvFile) formData.append("cv", cvFile);
         }
-        
+
         try {
           const response = await fetch(
             "http://localhost:5000/api/users/create",
@@ -190,10 +202,10 @@ const Signup = () => {
               body: formData,
             }
           );
-          
+
           const result = await response.json();
           if (!response.ok) throw new Error(result.error || "Signup failed.");
-          
+
           setSuccessMessage("Account created! Redirecting to login...");
           setTimeout(() => navigate("/login"), 1500);
         } catch (error) {
@@ -359,7 +371,8 @@ const Signup = () => {
                       <div className="text-xs mt-1 ml-1 text-gray-500 flex items-center">
                         {passwordValid ? (
                           <span className="text-green-500 flex items-center">
-                            <Check className="h-3 w-3 mr-1" /> Password is strong
+                            <Check className="h-3 w-3 mr-1" /> Password is
+                            strong
                           </span>
                         ) : (
                           <span className="text-red-500">
@@ -429,7 +442,9 @@ const Signup = () => {
 
                   {/* Role Selection */}
                   <div>
-                    <label className="block text-gray-700 mb-2 font-medium">I am a:</label>
+                    <label className="block text-gray-700 mb-2 font-medium">
+                      I am a:
+                    </label>
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         type="button"
@@ -479,7 +494,9 @@ const Signup = () => {
                               }`}
                             >
                               <div className="mb-1">{service.icon}</div>
-                              <span className="text-xs font-medium">{service.name}</span>
+                              <span className="text-xs font-medium">
+                                {service.name}
+                              </span>
                               {selectedService === service.name && (
                                 <div className="absolute top-1 right-1 bg-indigo-500 rounded-full p-1">
                                   <Check className="h-3 w-3 text-white" />
@@ -501,7 +518,9 @@ const Signup = () => {
                         <div>
                           <label className="block text-gray-700 mb-2 font-medium">
                             Experience (years):
-                            <span className="text-xs text-gray-500 ml-1">(0-40)</span>
+                            <span className="text-xs text-gray-500 ml-1">
+                              (0-40)
+                            </span>
                           </label>
                           <input
                             type="text"
@@ -513,7 +532,7 @@ const Signup = () => {
                             inputMode="numeric"
                           />
                         </div>
-                        
+
                         <div>
                           <label className="block text-gray-700 mb-2 font-medium">
                             Upload CV:
@@ -526,15 +545,28 @@ const Signup = () => {
                               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                               id="cv-upload"
                             />
-                            <label 
+                            <label
                               htmlFor="cv-upload"
                               className="block w-full p-3 rounded-xl border border-gray-200 bg-gray-50 text-center cursor-pointer hover:bg-gray-100 transition-colors"
                             >
                               <div className="flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-5 w-5 mr-2 text-gray-500"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                                  />
                                 </svg>
-                                <span className="text-gray-600 font-medium">Choose File</span>
+                                <span className="text-gray-600 font-medium">
+                                  Choose File
+                                </span>
                               </div>
                             </label>
                           </div>
@@ -562,7 +594,8 @@ const Signup = () => {
                       Location Access
                     </h3>
                     <p className="text-gray-600 text-sm mt-1">
-                      We need your location to provide localized services. Your location data is secure and will not be shared.
+                      We need your location to provide localized services. Your
+                      location data is secure and will not be shared.
                     </p>
                   </div>
                 </div>

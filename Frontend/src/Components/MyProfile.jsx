@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Camera, Loader, UserCircle, ArrowLeft, Mail, Phone, MapPin, Calendar, Settings } from "lucide-react";
+import {
+  Camera,
+  Loader,
+  UserCircle,
+  ArrowLeft,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  Settings,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const MyProfile = () => {
@@ -38,7 +48,7 @@ const MyProfile = () => {
   const handleUpdatePhoto = async (e) => {
     e.preventDefault();
     if (!newPhoto) return;
-    
+
     setIsUploading(true);
     const formData = new FormData();
     formData.append("photo", newPhoto);
@@ -86,7 +96,7 @@ const MyProfile = () => {
             />
           ))}
         </div>
-        
+
         <div className="flex flex-col items-center justify-center space-y-4">
           <div className="relative">
             <div className="w-24 h-24 rounded-full bg-indigo-700/20 animate-pulse"></div>
@@ -119,14 +129,16 @@ const MyProfile = () => {
             />
           ))}
         </div>
-        
+
         <div className="text-center p-8 bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl max-w-md">
           <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
             <Settings className="text-red-400" size={24} />
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Profile Error</h2>
-          <p className="text-indigo-200 mb-6">We couldn't load your profile information.</p>
-          <button 
+          <p className="text-indigo-200 mb-6">
+            We couldn't load your profile information.
+          </p>
+          <button
             onClick={() => window.location.reload()}
             className="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:opacity-90 transition-opacity shadow-lg"
           >
@@ -166,15 +178,18 @@ const MyProfile = () => {
             <div className="absolute top-10 -left-10 w-40 h-40 bg-purple-500/20 rounded-full filter blur-xl"></div>
             <div className="absolute top-20 right-0 w-32 h-32 bg-indigo-500/20 rounded-full filter blur-xl"></div>
           </div>
-          
+
           <button
             onClick={() => navigate(-1)}
             className="absolute top-6 left-6 flex items-center gap-2 text-indigo-100 hover:text-white font-medium transition-colors group"
           >
-            <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft
+              size={18}
+              className="group-hover:-translate-x-1 transition-transform"
+            />
             Back
           </button>
-          
+
           <h1 className="text-3xl font-bold text-center text-white">
             Your Profile
           </h1>
@@ -199,8 +214,8 @@ const MyProfile = () => {
                     <UserCircle size={72} />
                   </div>
                 )}
-                <label 
-                  htmlFor="photo" 
+                <label
+                  htmlFor="photo"
                   className="absolute -bottom-2 -right-2 bg-white/80 backdrop-blur-sm p-3 rounded-full shadow-lg cursor-pointer hover:scale-105 transition-transform"
                 >
                   <Camera size={20} className="text-indigo-600" />
@@ -239,29 +254,47 @@ const MyProfile = () => {
                 </h3>
                 <div className="space-y-4">
                   <div className="flex items-start gap-3">
-                    <Mail size={18} className="text-indigo-300 mt-0.5 flex-shrink-0" />
+                    <Mail
+                      size={18}
+                      className="text-indigo-300 mt-0.5 flex-shrink-0"
+                    />
                     <div>
                       <p className="text-xs text-indigo-300">Email</p>
-                      <p className="font-medium text-white">{profile.email || "Not provided"}</p>
+                      <p className="font-medium text-white">
+                        {profile.email || "Not provided"}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <Phone size={18} className="text-indigo-300 mt-0.5 flex-shrink-0" />
+                    <Phone
+                      size={18}
+                      className="text-indigo-300 mt-0.5 flex-shrink-0"
+                    />
                     <div>
                       <p className="text-xs text-indigo-300">Contact</p>
-                      <p className="font-medium text-white">{profile.contact || "Not provided"}</p>
+                      <p className="font-medium text-white">
+                        {profile.contact || "Not provided"}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <Calendar size={18} className="text-indigo-300 mt-0.5 flex-shrink-0" />
+                    <Calendar
+                      size={18}
+                      className="text-indigo-300 mt-0.5 flex-shrink-0"
+                    />
                     <div>
                       <p className="text-xs text-indigo-300">Joined</p>
                       <p className="font-medium text-white">
-                        {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        }) : "N/A"}
+                        {profile.createdAt
+                          ? new Date(profile.createdAt).toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              }
+                            )
+                          : "N/A"}
                       </p>
                     </div>
                   </div>
@@ -279,14 +312,30 @@ const MyProfile = () => {
                 </h3>
                 <div className="space-y-4">
                   <div className="flex items-start gap-3">
-                    <MapPin size={18} className="text-indigo-300 mt-0.5 flex-shrink-0" />
+                    <MapPin
+                      size={18}
+                      className="text-indigo-300 mt-0.5 flex-shrink-0"
+                    />
                     <div>
                       <p className="text-xs text-indigo-300">Address</p>
-                      <p className="font-medium text-white">{profile.address || "Not provided"}</p>
+                      <p className="font-medium text-white">
+                        {profile.address || "Not provided"}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-300 mt-0.5 flex-shrink-0">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-indigo-300 mt-0.5 flex-shrink-0"
+                    >
                       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                       <circle cx="12" cy="10" r="3"></circle>
                     </svg>
@@ -298,20 +347,42 @@ const MyProfile = () => {
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-300 mt-0.5 flex-shrink-0">
-                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-indigo-300 mt-0.5 flex-shrink-0"
+                    >
+                      <rect
+                        x="2"
+                        y="7"
+                        width="20"
+                        height="14"
+                        rx="2"
+                        ry="2"
+                      ></rect>
                       <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
                     </svg>
                     <div>
                       <p className="text-xs text-indigo-300">Services</p>
                       <p className="font-medium text-white">
                         {(() => {
-                          const services = Array.isArray(profile.servicesOffered)
+                          const services = Array.isArray(
+                            profile.servicesOffered
+                          )
                             ? profile.servicesOffered
                             : profile.servicesOffered
                             ? [profile.servicesOffered]
                             : [];
-                          return services.length > 0 ? services.join(", ") : "None";
+                          return services.length > 0
+                            ? services.join(", ")
+                            : "None";
                         })()}
                       </p>
                     </div>
@@ -330,9 +401,9 @@ const MyProfile = () => {
                 </h3>
                 <div className="flex flex-col items-center space-y-5">
                   <div className="relative rounded-full p-1 bg-gradient-to-tr from-indigo-500 to-purple-500">
-                    <img 
-                      src={URL.createObjectURL(newPhoto)} 
-                      alt="Preview" 
+                    <img
+                      src={URL.createObjectURL(newPhoto)}
+                      alt="Preview"
                       className="w-32 h-32 rounded-full object-cover border-4 border-white/30"
                     />
                   </div>
@@ -340,9 +411,9 @@ const MyProfile = () => {
                     type="submit"
                     disabled={isUploading}
                     className={`w-full max-w-xs flex justify-center items-center py-3 px-6 rounded-xl text-white font-medium transition-all ${
-                      isUploading 
-                        ? 'bg-indigo-700/50 cursor-not-allowed' 
-                        : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 shadow-lg'
+                      isUploading
+                        ? "bg-indigo-700/50 cursor-not-allowed"
+                        : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 shadow-lg"
                     }`}
                   >
                     {isUploading ? (

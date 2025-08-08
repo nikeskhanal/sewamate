@@ -134,13 +134,8 @@ const Admindashboard = () => {
                                   const token = localStorage.getItem("token");
                                   await axios.put(
                                     `http://localhost:5000/api/users/rate/${worker._id}`,
-                                    JSON.stringify({ ratePerHour: newRate }),
-                                    {
-                                      headers: {
-                                        Authorization: `Bearer ${token}`,
-                                        "Content-Type": "application/json"
-                                      }
-                                    }
+                                    { ratePerHour: newRate },
+                                    { headers: { Authorization: `Bearer ${token}` } }
                                   );
                                   setRateStatus({ ...rateStatus, [worker._id]: "success" });
                                   fetchUsers();

@@ -19,13 +19,7 @@ const Navbar = () => {
     <nav className="bg-white shadow-md p-4 flex justify-between items-center">
       <h1 className="text-2xl font-bold text-blue-600">SewaMate</h1>
       <div className="flex items-center gap-6">
-        <button
-          className="flex items-center gap-2 text-gray-600 hover:text-blue-500 transition-colors"
-          title="Notifications"
-        >
-          <Bell size={20} />
-          <span>Notifications</span>
-        </button>
+       
 
         <button
           className="flex items-center gap-2 text-gray-600 hover:text-blue-500 transition-colors"
